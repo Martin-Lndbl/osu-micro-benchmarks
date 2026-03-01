@@ -34,22 +34,22 @@ int main(int argc, char *argv[])
 
     options.show_size = 0;
 
-    MPI_Init(&argc, &argv);
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
+    PMPI_Init(&argc, &argv);
+    PMPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    PMPI_Comm_size(MPI_COMM_WORLD, &numprocs);
 
     switch (po_ret) {
         case po_bad_usage:
             print_bad_usage_message(rank);
-            MPI_Finalize();
+            PMPI_Finalize();
             exit(EXIT_FAILURE);
         case po_help_message:
             print_help_message(rank);
-            MPI_Finalize();
+            PMPI_Finalize();
             exit(EXIT_SUCCESS);
         case po_version_message:
             print_version_message(rank);
-            MPI_Finalize();
+            PMPI_Finalize();
             exit(EXIT_SUCCESS);
         case po_okay:
             break;
@@ -60,7 +60,7 @@ int main(int argc, char *argv[])
             fprintf(stderr, "This test requires at least two processes\n");
         }
 
-        MPI_Finalize();
+        PMPI_Finalize();
 
         return EXIT_FAILURE;
     }
@@ -72,29 +72,29 @@ int main(int argc, char *argv[])
     timer = 0.0;
 
     for(i=0; i < options.iterations + options.skip ; i++) {
-        t_start = MPI_Wtime();
-        MPI_Barrier(MPI_COMM_WORLD);
-        t_stop = MPI_Wtime();
+        t_start = PMPI_Wtime();
+        PMPI_Barrier(MPI_COMM_WORLD);
+        t_stop = PMPI_Wtime();
 
         if(i>=options.skip){
             timer+=t_stop-t_start;
         }
     }
 
-    MPI_Barrier(MPI_COMM_WORLD);
+    PMPI_Barrier(MPI_COMM_WORLD);
 
     latency = (timer * 1e6) / options.iterations;
 
-    MPI_Reduce(&latency, &min_time, 1, MPI_DOUBLE, MPI_MIN, 0,
+    PMPI_Reduce(&latency, &min_time, 1, MPI_DOUBLE, MPI_MIN, 0,
                 MPI_COMM_WORLD);
-    MPI_Reduce(&latency, &max_time, 1, MPI_DOUBLE, MPI_MAX, 0,
+    PMPI_Reduce(&latency, &max_time, 1, MPI_DOUBLE, MPI_MAX, 0,
                 MPI_COMM_WORLD);
-    MPI_Reduce(&latency, &avg_time, 1, MPI_DOUBLE, MPI_SUM, 0,
+    PMPI_Reduce(&latency, &avg_time, 1, MPI_DOUBLE, MPI_SUM, 0,
                 MPI_COMM_WORLD);
     avg_time = avg_time/numprocs;
 
     print_stats(rank, 0, avg_time, min_time, max_time);
-    MPI_Finalize();
+    PMPI_Finalize();
 
     return EXIT_SUCCESS;
 }

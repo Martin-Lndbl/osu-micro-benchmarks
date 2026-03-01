@@ -20,25 +20,25 @@ main (int argc, char *argv[])
     long duration = 0, min, max, avg;
 
     clock_gettime(CLOCK_REALTIME, &tp_before);
-    MPI_Init(&argc, &argv);
+    PMPI_Init(&argc, &argv);
     clock_gettime(CLOCK_REALTIME, &tp_after);
 
     duration = (tp_after.tv_sec - tp_before.tv_sec) * 1e3;
     duration += (tp_after.tv_nsec - tp_before.tv_nsec) / 1e6;
 
-    MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
-    MPI_Comm_rank(MPI_COMM_WORLD, &myid);
+    PMPI_Comm_size(MPI_COMM_WORLD, &numprocs);
+    PMPI_Comm_rank(MPI_COMM_WORLD, &myid);
 
-    MPI_Reduce(&duration, &min, 1, MPI_LONG, MPI_MIN, 0, MPI_COMM_WORLD);
-    MPI_Reduce(&duration, &max, 1, MPI_LONG, MPI_MAX, 0, MPI_COMM_WORLD);
-    MPI_Reduce(&duration, &avg, 1, MPI_LONG, MPI_SUM, 0, MPI_COMM_WORLD);
+    PMPI_Reduce(&duration, &min, 1, MPI_LONG, MPI_MIN, 0, MPI_COMM_WORLD);
+    PMPI_Reduce(&duration, &max, 1, MPI_LONG, MPI_MAX, 0, MPI_COMM_WORLD);
+    PMPI_Reduce(&duration, &avg, 1, MPI_LONG, MPI_SUM, 0, MPI_COMM_WORLD);
     avg = avg/numprocs;
 
     if(myid == 0) {
         printf("nprocs: %d, min: %ld, max: %ld, avg: %ld\n", numprocs, min, max, avg);
     }
 
-    MPI_Finalize();
+    PMPI_Finalize();
 
     return EXIT_SUCCESS;
 }

@@ -33,10 +33,10 @@ int main(int argc, char* argv[])
         }
     }
     set_header(HEADER);
-    MPI_Init(&argc, &argv);
+    PMPI_Init(&argc, &argv);
 
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
+    PMPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    PMPI_Comm_size(MPI_COMM_WORLD, &nprocs);
 
     pairs = nprocs/2;
 
@@ -61,10 +61,10 @@ int main(int argc, char* argv[])
         case po_cuda_not_avail:
         case po_openacc_not_avail:
         case po_bad_usage:
-            MPI_Finalize();
+            PMPI_Finalize();
             exit(EXIT_FAILURE);
         case po_help_message:
-            MPI_Finalize();
+            PMPI_Finalize();
             exit(EXIT_SUCCESS);
         case po_okay:
             break;
@@ -89,13 +89,13 @@ int main(int argc, char* argv[])
         fflush(stdout);
     }
 
-    MPI_Barrier(MPI_COMM_WORLD);
+    PMPI_Barrier(MPI_COMM_WORLD);
 
     multi_latency(rank, pairs);
     
-    MPI_Barrier(MPI_COMM_WORLD);
+    PMPI_Barrier(MPI_COMM_WORLD);
 
-    MPI_Finalize();
+    PMPI_Finalize();
 
     free(r_buf);
     free(s_buf);
@@ -116,7 +116,7 @@ static void multi_latency(int rank, int pairs)
 
     for(size = 0; size <= MAX_MSG_SIZE; size  = (size ? size * 2 : 1)) {
 
-        MPI_Barrier(MPI_COMM_WORLD);
+        PMPI_Barrier(MPI_COMM_WORLD);
 
         if(size > LARGE_MESSAGE_SIZE) {
             options.loop = options.loop_large;
@@ -133,15 +133,15 @@ static void multi_latency(int rank, int pairs)
 
                 if (i == options.skip) {
                     t_start = MPI_Wtime();
-                    MPI_Barrier(MPI_COMM_WORLD);
+                    PMPI_Barrier(MPI_COMM_WORLD);
                 }
 
-                MPI_Send(s_buf, size, MPI_CHAR, partner, 1, MPI_COMM_WORLD);
-                MPI_Recv(r_buf, size, MPI_CHAR, partner, 1, MPI_COMM_WORLD,
+                PMPI_Send(s_buf, size, MPI_CHAR, partner, 1, MPI_COMM_WORLD);
+                PMPI_Recv(r_buf, size, MPI_CHAR, partner, 1, MPI_COMM_WORLD,
                          &reqstat);
             }
 
-            t_end = MPI_Wtime();
+            t_end = PMPI_Wtime();
 
         } else {
             partner = rank - pairs;
@@ -149,21 +149,21 @@ static void multi_latency(int rank, int pairs)
             for (i = 0; i < options.loop + options.skip; i++) {
 
                 if (i == options.skip) {
-                    t_start = MPI_Wtime();
-                    MPI_Barrier(MPI_COMM_WORLD);
+                    t_start = PMPI_Wtime();
+                    PMPI_Barrier(MPI_COMM_WORLD);
                 }
 
-                MPI_Recv(r_buf, size, MPI_CHAR, partner, 1, MPI_COMM_WORLD,
+                PMPI_Recv(r_buf, size, MPI_CHAR, partner, 1, MPI_COMM_WORLD,
                          &reqstat);
-                MPI_Send(s_buf, size, MPI_CHAR, partner, 1, MPI_COMM_WORLD);
+                PMPI_Send(s_buf, size, MPI_CHAR, partner, 1, MPI_COMM_WORLD);
             }
 
-            t_end = MPI_Wtime();
+            t_end = PMPI_Wtime();
         }
 
         latency = (t_end - t_start) * 1.0e6 / (2.0 * options.loop);
 
-        MPI_Reduce(&latency, &total_lat, 1, MPI_DOUBLE, MPI_SUM, 0, 
+        PMPI_Reduce(&latency, &total_lat, 1, MPI_DOUBLE, MPI_SUM, 0, 
                    MPI_COMM_WORLD);
 
         avg_lat = total_lat/(double) (pairs * 2);

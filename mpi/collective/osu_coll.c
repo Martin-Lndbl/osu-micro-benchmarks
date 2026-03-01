@@ -584,35 +584,35 @@ calculate_and_print_stats(int rank, int size, int numprocs,
         double comm_time   = latency;
 
         if(rank != 0) {
-            MPI_Reduce(&test_total, &test_total, 1, MPI_DOUBLE, MPI_SUM, 0,
+            PMPI_Reduce(&test_total, &test_total, 1, MPI_DOUBLE, MPI_SUM, 0,
                 MPI_COMM_WORLD);
-            MPI_Reduce(&comm_time, &comm_time, 1, MPI_DOUBLE, MPI_SUM, 0,
+            PMPI_Reduce(&comm_time, &comm_time, 1, MPI_DOUBLE, MPI_SUM, 0,
                 MPI_COMM_WORLD);
-            MPI_Reduce(&overall_time, &overall_time, 1, MPI_DOUBLE, MPI_SUM, 0,
+            PMPI_Reduce(&overall_time, &overall_time, 1, MPI_DOUBLE, MPI_SUM, 0,
                 MPI_COMM_WORLD);
-            MPI_Reduce(&tcomp_total, &tcomp_total, 1, MPI_DOUBLE, MPI_SUM, 0,
+            PMPI_Reduce(&tcomp_total, &tcomp_total, 1, MPI_DOUBLE, MPI_SUM, 0,
                 MPI_COMM_WORLD);
-            MPI_Reduce(&wait_total, &wait_total, 1, MPI_DOUBLE, MPI_SUM, 0,
+            PMPI_Reduce(&wait_total, &wait_total, 1, MPI_DOUBLE, MPI_SUM, 0,
                 MPI_COMM_WORLD);
-            MPI_Reduce(&init_total, &init_total, 1, MPI_DOUBLE, MPI_SUM, 0,
+            PMPI_Reduce(&init_total, &init_total, 1, MPI_DOUBLE, MPI_SUM, 0,
                 MPI_COMM_WORLD);
         }
         else {
-            MPI_Reduce(MPI_IN_PLACE, &test_total, 1, MPI_DOUBLE, MPI_SUM, 0,
+            PMPI_Reduce(MPI_IN_PLACE, &test_total, 1, MPI_DOUBLE, MPI_SUM, 0,
                 MPI_COMM_WORLD);
-            MPI_Reduce(MPI_IN_PLACE, &comm_time, 1, MPI_DOUBLE, MPI_SUM, 0,
+            PMPI_Reduce(MPI_IN_PLACE, &comm_time, 1, MPI_DOUBLE, MPI_SUM, 0,
                 MPI_COMM_WORLD);
-            MPI_Reduce(MPI_IN_PLACE, &overall_time, 1, MPI_DOUBLE, MPI_SUM, 0,
+            PMPI_Reduce(MPI_IN_PLACE, &overall_time, 1, MPI_DOUBLE, MPI_SUM, 0,
                 MPI_COMM_WORLD);
-            MPI_Reduce(MPI_IN_PLACE, &tcomp_total, 1, MPI_DOUBLE, MPI_SUM, 0,
+            PMPI_Reduce(MPI_IN_PLACE, &tcomp_total, 1, MPI_DOUBLE, MPI_SUM, 0,
                 MPI_COMM_WORLD);
-            MPI_Reduce(MPI_IN_PLACE, &wait_total, 1, MPI_DOUBLE, MPI_SUM, 0,
+            PMPI_Reduce(MPI_IN_PLACE, &wait_total, 1, MPI_DOUBLE, MPI_SUM, 0,
                 MPI_COMM_WORLD);
-            MPI_Reduce(MPI_IN_PLACE, &init_total, 1, MPI_DOUBLE, MPI_SUM, 0,
+            PMPI_Reduce(MPI_IN_PLACE, &init_total, 1, MPI_DOUBLE, MPI_SUM, 0,
                 MPI_COMM_WORLD);
         }
 
-        MPI_Barrier(MPI_COMM_WORLD);
+        PMPI_Barrier(MPI_COMM_WORLD);
 
         /* Overall Time (Overlapped) */
         overall_time = overall_time/numprocs;
@@ -947,7 +947,7 @@ do_compute_gpu(double seconds)
     double time_elapsed = 0.0, t1 = 0.0, t2 = 0.0;
 
     {
-        t1 = MPI_Wtime();
+        t1 = PMPI_Wtime();
 
         /* Execute Dummy Kernel on GPU if set by user */
         if (options.target == both || options.target == gpu) {
@@ -957,7 +957,7 @@ do_compute_gpu(double seconds)
             }
         }
 
-        t2 = MPI_Wtime();
+        t2 = PMPI_Wtime();
         time_elapsed += (t2-t1);
     }
 }
@@ -979,9 +979,9 @@ do_compute_cpu(double target_seconds)
     double t1 = 0.0, t2 = 0.0;
     double time_elapsed = 0.0;
     while (time_elapsed < target_seconds) {
-        t1 = MPI_Wtime();
+        t1 = PMPI_Wtime();
         compute_on_host();
-        t2 = MPI_Wtime();
+        t2 = PMPI_Wtime();
         time_elapsed += (t2-t1);
     }
     if (DEBUG) fprintf(stderr, "time elapsed = %f\n", (time_elapsed * 1e6));
@@ -1013,9 +1013,9 @@ do_compute_and_probe(double seconds, MPI_Request* request)
             do_compute_gpu(target_seconds_for_compute);
             num_tests = 0;
             while (num_tests < options.num_probes) {
-                t1 = MPI_Wtime();
-                MPI_Test(request, &flag, &status);
-                t2 = MPI_Wtime();
+                t1 = PMPI_Wtime();
+                PMPI_Test(request, &flag, &status);
+                t2 = PMPI_Wtime();
                 test_time += (t2-t1);
                 num_tests++;
             }
@@ -1030,9 +1030,9 @@ do_compute_and_probe(double seconds, MPI_Request* request)
             do_compute_gpu(target_seconds_for_compute);
             num_tests = 0;
             while (num_tests < options.num_probes) {
-                t1 = MPI_Wtime();
-                MPI_Test(request, &flag, &status);
-                t2 = MPI_Wtime();
+                t1 = PMPI_Wtime();
+                PMPI_Test(request, &flag, &status);
+                t2 = PMPI_Wtime();
                 test_time += (t2-t1);
                 num_tests++;
                 do_compute_cpu(target_seconds_for_compute);
@@ -1050,9 +1050,9 @@ do_compute_and_probe(double seconds, MPI_Request* request)
             num_tests = 0;
             while (num_tests < options.num_probes) {
                 do_compute_cpu(target_seconds_for_compute);
-                t1 = MPI_Wtime();
-                MPI_Test(request, &flag, &status);
-                t2 = MPI_Wtime();
+                t1 = PMPI_Wtime();
+                PMPI_Test(request, &flag, &status);
+                t2 = PMPI_Wtime();
                 test_time += (t2-t1);
                 num_tests++;
             }
@@ -1107,7 +1107,7 @@ init_arrays(double target_time)
     double t1 = 0.0, t2 = 0.0;
     
     while (1) {
-        t1 = MPI_Wtime();
+        t1 = PMPI_Wtime();
         
         if (options.target == gpu || options.target == both) {
             cudaStreamCreate(&stream);
@@ -1117,7 +1117,7 @@ init_arrays(double target_time)
             cudaStreamDestroy(stream);
         }
 
-        t2 = MPI_Wtime();
+        t2 = PMPI_Wtime();
         if ((t2-t1) < target_time)
         {  
             N += 32;

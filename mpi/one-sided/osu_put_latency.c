@@ -61,9 +61,9 @@ int main (int argc, char *argv[])
         }
     }
  
-    MPI_CHECK(MPI_Init(&argc, &argv));
-    MPI_CHECK(MPI_Comm_size(MPI_COMM_WORLD, &nprocs));
-    MPI_CHECK(MPI_Comm_rank(MPI_COMM_WORLD, &rank));
+    MPI_CHECK(PMPI_Init(&argc, &argv));
+    MPI_CHECK(PMPI_Comm_size(MPI_COMM_WORLD, &nprocs));
+    MPI_CHECK(PMPI_Comm_rank(MPI_COMM_WORLD, &rank));
 
     if (0 == rank) {
         switch (po_ret) {
@@ -86,10 +86,10 @@ int main (int argc, char *argv[])
         case po_cuda_not_avail:
         case po_openacc_not_avail:
         case po_bad_usage:
-            MPI_Finalize();
+            PMPI_Finalize();
             exit(EXIT_FAILURE);
         case po_help_message:
-            MPI_Finalize();
+            PMPI_Finalize();
             exit(EXIT_SUCCESS);
         case po_okay:
             break;
@@ -100,7 +100,7 @@ int main (int argc, char *argv[])
             fprintf(stderr, "This test requires exactly two processes\n");
         }
 
-        MPI_CHECK(MPI_Finalize());
+        MPI_CHECK(PMPI_Finalize());
 
         return EXIT_FAILURE;
     }
@@ -130,7 +130,7 @@ int main (int argc, char *argv[])
 #endif
     }
 
-    MPI_CHECK(MPI_Finalize());
+    MPI_CHECK(PMPI_Finalize());
 
     if (none != options.accel) {
         if (cleanup_accel()) {
@@ -205,19 +205,19 @@ void run_put_with_flush_local (int rank, WINDOW type)
         }
 
         if(rank == 0) {
-            MPI_CHECK(MPI_Win_lock(MPI_LOCK_SHARED, 1, 0, win));
+            MPI_CHECK(PMPI_Win_lock(MPI_LOCK_SHARED, 1, 0, win));
             for (i = 0; i < options.skip + options.loop; i++) {
                 if (i == options.skip) {
-                    t_start = MPI_Wtime ();
+                        t_start = PMPI_Wtime ();
                 }
-                MPI_CHECK(MPI_Put(sbuf, size, MPI_CHAR, 1, disp, size, MPI_CHAR, win));
-                MPI_CHECK(MPI_Win_flush_local(1, win));
+                MPI_CHECK(PMPI_Put(sbuf, size, MPI_CHAR, 1, disp, size, MPI_CHAR, win));
+                MPI_CHECK(PMPI_Win_flush_local(1, win));
             }
-            t_end = MPI_Wtime ();
-            MPI_CHECK(MPI_Win_unlock(1, win));
+            t_end = PMPI_Wtime ();
+            MPI_CHECK(PMPI_Win_unlock(1, win));
         }                
 
-        MPI_CHECK(MPI_Barrier(MPI_COMM_WORLD));
+        MPI_CHECK(PMPI_Barrier(MPI_COMM_WORLD));
 
         print_latency(rank, size);
 
@@ -245,19 +245,19 @@ void run_put_with_flush (int rank, WINDOW type)
         }
 
         if(rank == 0) {
-            MPI_CHECK(MPI_Win_lock(MPI_LOCK_SHARED, 1, 0, win));
+            MPI_CHECK(PMPI_Win_lock(MPI_LOCK_SHARED, 1, 0, win));
             for (i = 0; i < options.skip + options.loop; i++) {
                 if (i == options.skip) {
-                    t_start = MPI_Wtime ();
+                    t_start = PMPI_Wtime ();
                 }
-                MPI_CHECK(MPI_Put(sbuf, size, MPI_CHAR, 1, disp, size, MPI_CHAR, win));
-                MPI_CHECK(MPI_Win_flush(1, win));
+                MPI_CHECK(PMPI_Put(sbuf, size, MPI_CHAR, 1, disp, size, MPI_CHAR, win));
+                MPI_CHECK(PMPI_Win_flush(1, win));
             }
-            t_end = MPI_Wtime ();
-            MPI_CHECK(MPI_Win_unlock(1, win));
+            t_end = PMPI_Wtime ();
+            MPI_CHECK(PMPI_Win_unlock(1, win));
         }                
 
-        MPI_CHECK(MPI_Barrier(MPI_COMM_WORLD));
+        MPI_CHECK(PMPI_Barrier(MPI_COMM_WORLD));
 
         print_latency(rank, size);
 
@@ -287,16 +287,16 @@ void run_put_with_lock_all (int rank, WINDOW type)
         if(rank == 0) {
             for (i = 0; i < options.skip + options.loop; i++) {
                 if (i == options.skip) {
-                    t_start = MPI_Wtime ();
+                    t_start = PMPI_Wtime ();
                 }
-                MPI_CHECK(MPI_Win_lock_all(0, win));
-                MPI_CHECK(MPI_Put(sbuf, size, MPI_CHAR, 1, disp, size, MPI_CHAR, win));
-                MPI_CHECK(MPI_Win_unlock_all(win));
+                MPI_CHECK(PMPI_Win_lock_all(0, win));
+                MPI_CHECK(PMPI_Put(sbuf, size, MPI_CHAR, 1, disp, size, MPI_CHAR, win));
+                MPI_CHECK(PMPI_Win_unlock_all(win));
             }
-            t_end = MPI_Wtime ();
+            t_end = PMPI_Wtime ();
         }                
 
-        MPI_CHECK(MPI_Barrier(MPI_COMM_WORLD));
+        MPI_CHECK(PMPI_Barrier(MPI_COMM_WORLD));
 
         print_latency(rank, size);
 
@@ -329,16 +329,16 @@ void run_put_with_lock(int rank, WINDOW type)
         if(rank == 0) {
             for (i = 0; i < options.skip + options.loop; i++) {
                 if (i == options.skip) {
-                    t_start = MPI_Wtime ();
+                    t_start = PMPI_Wtime ();
                 }
-                MPI_CHECK(MPI_Win_lock(MPI_LOCK_SHARED, 1, 0, win));
-                MPI_CHECK(MPI_Put(sbuf, size, MPI_CHAR, 1, disp, size, MPI_CHAR, win));
-                MPI_CHECK(MPI_Win_unlock(1, win));
+                MPI_CHECK(PMPI_Win_lock(MPI_LOCK_SHARED, 1, 0, win));
+                MPI_CHECK(PMPI_Put(sbuf, size, MPI_CHAR, 1, disp, size, MPI_CHAR, win));
+                MPI_CHECK(PMPI_Win_unlock(1, win));
             }
-            t_end = MPI_Wtime ();
+            t_end = PMPI_Wtime ();
         }                
 
-        MPI_CHECK(MPI_Barrier(MPI_COMM_WORLD));
+        MPI_CHECK(PMPI_Barrier(MPI_COMM_WORLD));
 
         print_latency(rank, size);
 
@@ -367,29 +367,29 @@ void run_put_with_fence(int rank, WINDOW type)
             options.skip = SKIP_LARGE;
         }
 
-        MPI_CHECK(MPI_Barrier(MPI_COMM_WORLD));
+        MPI_CHECK(PMPI_Barrier(MPI_COMM_WORLD));
 
         if(rank == 0) {
             for (i = 0; i < options.skip + options.loop; i++) {
                 if (i == options.skip) {
-                    t_start = MPI_Wtime ();
+                    t_start = PMPI_Wtime ();
                 }
-                MPI_CHECK(MPI_Win_fence(0, win));
-                MPI_CHECK(MPI_Put(sbuf, size, MPI_CHAR, 1, disp, size, MPI_CHAR, win));
-                MPI_CHECK(MPI_Win_fence(0, win));
-                MPI_CHECK(MPI_Win_fence(0, win));
+                MPI_CHECK(PMPI_Win_fence(0, win));
+                MPI_CHECK(PMPI_Put(sbuf, size, MPI_CHAR, 1, disp, size, MPI_CHAR, win));
+                MPI_CHECK(PMPI_Win_fence(0, win));
+                MPI_CHECK(PMPI_Win_fence(0, win));
             }
-            t_end = MPI_Wtime ();
+            t_end = PMPI_Wtime ();
         } else {
             for (i = 0; i < options.skip + options.loop; i++) {
-                MPI_CHECK(MPI_Win_fence(0, win));
-                MPI_CHECK(MPI_Win_fence(0, win));
-                MPI_CHECK(MPI_Put(sbuf, size, MPI_CHAR, 0, disp, size, MPI_CHAR, win));
-                MPI_CHECK(MPI_Win_fence(0, win));
+                MPI_CHECK(PMPI_Win_fence(0, win));
+                MPI_CHECK(PMPI_Win_fence(0, win));
+                MPI_CHECK(PMPI_Put(sbuf, size, MPI_CHAR, 0, disp, size, MPI_CHAR, win));
+                MPI_CHECK(PMPI_Win_fence(0, win));
             }
         }
 
-        MPI_CHECK(MPI_Barrier(MPI_COMM_WORLD));
+        MPI_CHECK(PMPI_Barrier(MPI_COMM_WORLD));
 
         if (rank == 0) {
             fprintf(stdout, "%-*d%*.*f\n", 10, size, FIELD_WIDTH,
@@ -409,7 +409,7 @@ void run_put_with_pscw(int rank, WINDOW type)
     MPI_Win     win;
     MPI_Group   comm_group, group;
 
-    MPI_CHECK(MPI_Comm_group(MPI_COMM_WORLD, &comm_group));
+    MPI_CHECK(PMPI_Comm_group(MPI_COMM_WORLD, &comm_group));
 
     for (size = 0; size <= MAX_SIZE; size = (size ? size * 2 : 1)) {
         allocate_memory(rank, sbuf_original, rbuf_original, &sbuf, &rbuf, &rbuf, size, type, &win);
@@ -428,38 +428,38 @@ void run_put_with_pscw(int rank, WINDOW type)
         if (rank == 0) {
             destrank = 1;
 
-            MPI_CHECK(MPI_Group_incl(comm_group, 1, &destrank, &group));
-            MPI_CHECK(MPI_Barrier(MPI_COMM_WORLD));
+            MPI_CHECK(PMPI_Group_incl(comm_group, 1, &destrank, &group));
+            MPI_CHECK(PMPI_Barrier(MPI_COMM_WORLD));
 
             for (i = 0; i < options.skip + options.loop; i++) {
-                MPI_CHECK(MPI_Win_start (group, 0, win));
+                MPI_CHECK(PMPI_Win_start (group, 0, win));
                 if (i == options.skip) {
-                    t_start = MPI_Wtime ();
+                    t_start = PMPI_Wtime ();
                 }
-                MPI_CHECK(MPI_Put(sbuf, size, MPI_CHAR, 1, disp, size, MPI_CHAR, win));
-                MPI_CHECK(MPI_Win_complete(win));
-                MPI_CHECK(MPI_Win_post(group, 0, win));
-                MPI_CHECK(MPI_Win_wait(win));
+                MPI_CHECK(PMPI_Put(sbuf, size, MPI_CHAR, 1, disp, size, MPI_CHAR, win));
+                MPI_CHECK(PMPI_Win_complete(win));
+                MPI_CHECK(PMPI_Win_post(group, 0, win));
+                MPI_CHECK(PMPI_Win_wait(win));
             }
 
-            t_end = MPI_Wtime ();
+            t_end = PMPI_Wtime ();
         } else {
             /* rank=1 */
             destrank = 0;
 
-            MPI_CHECK(MPI_Group_incl(comm_group, 1, &destrank, &group));
-            MPI_CHECK(MPI_Barrier(MPI_COMM_WORLD));
+            MPI_CHECK(PMPI_Group_incl(comm_group, 1, &destrank, &group));
+            MPI_CHECK(PMPI_Barrier(MPI_COMM_WORLD));
 
             for (i = 0; i < options.skip + options.loop; i++) {
-                MPI_CHECK(MPI_Win_post(group, 0, win));
-                MPI_CHECK(MPI_Win_wait(win));
-                MPI_CHECK(MPI_Win_start(group, 0, win));
-                MPI_CHECK(MPI_Put(sbuf, size, MPI_CHAR, 0, disp, size, MPI_CHAR, win));
-                MPI_CHECK(MPI_Win_complete(win));
+                MPI_CHECK(PMPI_Win_post(group, 0, win));
+                MPI_CHECK(PMPI_Win_wait(win));
+                MPI_CHECK(PMPI_Win_start(group, 0, win));
+                MPI_CHECK(PMPI_Put(sbuf, size, MPI_CHAR, 0, disp, size, MPI_CHAR, win));
+                MPI_CHECK(PMPI_Win_complete(win));
             }
         }
 
-        MPI_CHECK(MPI_Barrier(MPI_COMM_WORLD));
+        MPI_CHECK(PMPI_Barrier(MPI_COMM_WORLD));
 
         if (rank == 0) {
             fprintf(stdout, "%-*d%*.*f\n", 10, size, FIELD_WIDTH,
@@ -467,10 +467,10 @@ void run_put_with_pscw(int rank, WINDOW type)
             fflush(stdout);
         }
 
-        MPI_CHECK(MPI_Group_free(&group));
+        MPI_CHECK(PMPI_Group_free(&group));
 
         free_memory (sbuf, rbuf, win, rank);
     }
-    MPI_CHECK(MPI_Group_free(&comm_group));
+    MPI_CHECK(PMPI_Group_free(&comm_group));
 }
 /* vi: set sw=4 sts=4 tw=80: */

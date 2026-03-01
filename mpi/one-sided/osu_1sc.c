@@ -454,31 +454,31 @@ allocate_memory(int rank, char *sbuf_orig, char *rbuf_orig, char **sbuf, char **
 
     switch (type) {
         case WIN_CREATE:
-            MPI_CHECK(MPI_Win_create(*win_base, size, 1, MPI_INFO_NULL, MPI_COMM_WORLD, win));
+            MPI_CHECK(PMPI_Win_create(*win_base, size, 1, MPI_INFO_NULL, MPI_COMM_WORLD, win));
             break;
         case WIN_DYNAMIC:
-            MPI_CHECK(MPI_Win_create_dynamic(MPI_INFO_NULL, MPI_COMM_WORLD, win));
-            MPI_CHECK(MPI_Win_attach(*win, (void *)*win_base, size));
-            MPI_CHECK(MPI_Get_address(*win_base, &disp_local));
+            MPI_CHECK(PMPI_Win_create_dynamic(MPI_INFO_NULL, MPI_COMM_WORLD, win));
+            MPI_CHECK(PMPI_Win_attach(*win, (void *)*win_base, size));
+            MPI_CHECK(PMPI_Get_address(*win_base, &disp_local));
             if(rank == 0){
-                MPI_CHECK(MPI_Send(&disp_local, 1, MPI_AINT, 1, 1, MPI_COMM_WORLD));
-                MPI_CHECK(MPI_Recv(&disp_remote, 1, MPI_AINT, 1, 1, MPI_COMM_WORLD, &reqstat));
+                MPI_CHECK(PMPI_Send(&disp_local, 1, MPI_AINT, 1, 1, MPI_COMM_WORLD));
+                MPI_CHECK(PMPI_Recv(&disp_remote, 1, MPI_AINT, 1, 1, MPI_COMM_WORLD, &reqstat));
             }
             else{
-                MPI_CHECK(MPI_Recv(&disp_remote, 1, MPI_AINT, 0, 1, MPI_COMM_WORLD, &reqstat));
-                MPI_CHECK(MPI_Send(&disp_local, 1, MPI_AINT, 0, 1, MPI_COMM_WORLD));
+                MPI_CHECK(PMPI_Recv(&disp_remote, 1, MPI_AINT, 0, 1, MPI_COMM_WORLD, &reqstat));
+                MPI_CHECK(PMPI_Send(&disp_local, 1, MPI_AINT, 0, 1, MPI_COMM_WORLD));
             }
             break;
         default:
             if (mem_on_dev) {
-                MPI_CHECK(MPI_Win_create(*win_base, size, 1, MPI_INFO_NULL, MPI_COMM_WORLD, win));
+                MPI_CHECK(PMPI_Win_create(*win_base, size, 1, MPI_INFO_NULL, MPI_COMM_WORLD, win));
             } else {
-                MPI_CHECK(MPI_Win_allocate(size, 1, MPI_INFO_NULL, MPI_COMM_WORLD, *win_base, win));
+                MPI_CHECK(PMPI_Win_allocate(size, 1, MPI_INFO_NULL, MPI_COMM_WORLD, *win_base, win));
             }
             break;
     }
 #else
-    MPI_CHECK(MPI_Win_create(*win_base, size, 1, MPI_INFO_NULL, MPI_COMM_WORLD, win));
+    MPI_CHECK(PMPI_Win_create(*win_base, size, 1, MPI_INFO_NULL, MPI_COMM_WORLD, win));
 #endif
 }
 
@@ -528,38 +528,38 @@ allocate_atomic_memory(int rank, char *sbuf_orig, char *rbuf_orig, char *tbuf_or
 
     switch (type) {
         case WIN_CREATE:
-            MPI_CHECK(MPI_Win_create(*win_base, size, 1, MPI_INFO_NULL, MPI_COMM_WORLD, win));
+            MPI_CHECK(PMPI_Win_create(*win_base, size, 1, MPI_INFO_NULL, MPI_COMM_WORLD, win));
             break;
         case WIN_DYNAMIC:
-            MPI_CHECK(MPI_Win_create_dynamic(MPI_INFO_NULL, MPI_COMM_WORLD, win));
-            MPI_CHECK(MPI_Win_attach(*win, (void *)*win_base, size));
-            MPI_CHECK(MPI_Get_address(*win_base, &disp_local));
+            MPI_CHECK(PMPI_Win_create_dynamic(MPI_INFO_NULL, MPI_COMM_WORLD, win));
+            MPI_CHECK(PMPI_Win_attach(*win, (void *)*win_base, size));
+            MPI_CHECK(PMPI_Get_address(*win_base, &disp_local));
             if(rank == 0){
-                MPI_CHECK(MPI_Send(&disp_local, 1, MPI_AINT, 1, 1, MPI_COMM_WORLD));
-                MPI_CHECK(MPI_Recv(&disp_remote, 1, MPI_AINT, 1, 1, MPI_COMM_WORLD, &reqstat));
+                MPI_CHECK(PMPI_Send(&disp_local, 1, MPI_AINT, 1, 1, MPI_COMM_WORLD));
+                MPI_CHECK(PMPI_Recv(&disp_remote, 1, MPI_AINT, 1, 1, MPI_COMM_WORLD, &reqstat));
             }
             else{
-                MPI_CHECK(MPI_Recv(&disp_remote, 1, MPI_AINT, 0, 1, MPI_COMM_WORLD, &reqstat));
-                MPI_CHECK(MPI_Send(&disp_local, 1, MPI_AINT, 0, 1, MPI_COMM_WORLD));
+                MPI_CHECK(PMPI_Recv(&disp_remote, 1, MPI_AINT, 0, 1, MPI_COMM_WORLD, &reqstat));
+                MPI_CHECK(PMPI_Send(&disp_local, 1, MPI_AINT, 0, 1, MPI_COMM_WORLD));
             }
             break;
         default:
             if (mem_on_dev) {
-                MPI_CHECK(MPI_Win_create(*win_base, size, 1, MPI_INFO_NULL, MPI_COMM_WORLD, win));
+                MPI_CHECK(PMPI_Win_create(*win_base, size, 1, MPI_INFO_NULL, MPI_COMM_WORLD, win));
             } else {
-                MPI_CHECK(MPI_Win_allocate(size, 1, MPI_INFO_NULL, MPI_COMM_WORLD, *win_base, win));
+                MPI_CHECK(PMPI_Win_allocate(size, 1, MPI_INFO_NULL, MPI_COMM_WORLD, *win_base, win));
             }
             break;
     }
 #else
-    MPI_CHECK(MPI_Win_create(*win_base, size, 1, MPI_INFO_NULL, MPI_COMM_WORLD, win));
+    MPI_CHECK(PMPI_Win_create(*win_base, size, 1, MPI_INFO_NULL, MPI_COMM_WORLD, win));
 #endif
 }
 
 void 
 free_atomic_memory (void *sbuf, void *rbuf, void *tbuf, void *cbuf, MPI_Win win, int rank)
 {
-    MPI_Win_free(&win);
+    PMPI_Win_free(&win);
 
     switch (rank) {
         case 0:
@@ -586,7 +586,7 @@ free_atomic_memory (void *sbuf, void *rbuf, void *tbuf, void *cbuf, MPI_Win win,
 void 
 free_memory (void *sbuf, void *rbuf, MPI_Win win, int rank)
 {
-    MPI_Win_free(&win);
+    PMPI_Win_free(&win);
 
     switch (rank) {
         case 0:

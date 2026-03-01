@@ -58,10 +58,10 @@ int main(int argc, char *argv[])
     loop_override = 0;
     skip_override = 0;
     
-    MPI_Init(&argc, &argv);
+    PMPI_Init(&argc, &argv);
 
-    MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    PMPI_Comm_size(MPI_COMM_WORLD, &numprocs);
+    PMPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
     /* default values */
     pairs            = numprocs / 2;
@@ -137,7 +137,7 @@ int main(int argc, char *argv[])
             fprintf(stderr, "This test requires at least two processes\n");
         }
 
-        MPI_Finalize();
+        PMPI_Finalize();
 
         return EXIT_FAILURE;
     }
@@ -285,7 +285,7 @@ error:
    free(r_buf);
    free(s_buf);
 
-   MPI_Finalize();
+   PMPI_Finalize();
 
    return EXIT_SUCCESS;
 }
@@ -330,28 +330,28 @@ double calc_bw(int rank, int size, int num_pairs, int window_size, char *s_buf,
         }
     }
     
-    MPI_Barrier(MPI_COMM_WORLD);
+    PMPI_Barrier(MPI_COMM_WORLD);
 
     if(rank < num_pairs) {
         target = rank + num_pairs;
 
         for(i = 0; i <  loop +  skip; i++) {
             if(i ==  skip) {
-                MPI_Barrier(MPI_COMM_WORLD);
-                t_start = MPI_Wtime();
+                PMPI_Barrier(MPI_COMM_WORLD);
+                t_start = PMPI_Wtime();
             }
 
             for(j = 0; j < window_size; j++) {
-                MPI_Isend(s_buf, size, MPI_CHAR, target, 100, MPI_COMM_WORLD,
+                PMPI_Isend(s_buf, size, MPI_CHAR, target, 100, MPI_COMM_WORLD,
                         request + j);
             }
 
-            MPI_Waitall(window_size, request, reqstat);
-            MPI_Recv(r_buf, 4, MPI_CHAR, target, 101, MPI_COMM_WORLD,
+            PMPI_Waitall(window_size, request, reqstat);
+            PMPI_Recv(r_buf, 4, MPI_CHAR, target, 101, MPI_COMM_WORLD,
                     &reqstat[0]);
         }
 
-        t_end = MPI_Wtime();
+        t_end = PMPI_Wtime();
         t = t_end - t_start;
     }
 
@@ -360,24 +360,24 @@ double calc_bw(int rank, int size, int num_pairs, int window_size, char *s_buf,
 
         for(i = 0; i <  loop +  skip; i++) {
             if(i ==  skip) {
-                MPI_Barrier(MPI_COMM_WORLD);
+                PMPI_Barrier(MPI_COMM_WORLD);
             }
 
             for(j = 0; j < window_size; j++) {
-                MPI_Irecv(r_buf, size, MPI_CHAR, target, 100, MPI_COMM_WORLD,
+                PMPI_Irecv(r_buf, size, MPI_CHAR, target, 100, MPI_COMM_WORLD,
                         request + j);
             }
 
-            MPI_Waitall(window_size, request, reqstat);
-            MPI_Send(s_buf, 4, MPI_CHAR, target, 101, MPI_COMM_WORLD);
+            PMPI_Waitall(window_size, request, reqstat);
+            PMPI_Send(s_buf, 4, MPI_CHAR, target, 101, MPI_COMM_WORLD);
         }
     }
 
     else {
-        MPI_Barrier(MPI_COMM_WORLD);
+        PMPI_Barrier(MPI_COMM_WORLD);
     }
 
-    MPI_Reduce(&t, &sum_time, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+    PMPI_Reduce(&t, &sum_time, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 
     if(rank == 0) {
         double tmp = size / 1e6 * num_pairs ;

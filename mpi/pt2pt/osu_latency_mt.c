@@ -47,14 +47,14 @@ int main(int argc, char *argv[])
         }
     }
 
-    err = MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &provided);
+    err = PMPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &provided);
 
     if(err != MPI_SUCCESS) {
-        MPI_Abort(MPI_COMM_WORLD, 1);
+        PMPI_Abort(MPI_COMM_WORLD, 1);
     }
 
-    MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
-    MPI_Comm_rank(MPI_COMM_WORLD, &myid);
+    PMPI_Comm_size(MPI_COMM_WORLD, &numprocs);
+    PMPI_Comm_rank(MPI_COMM_WORLD, &myid);
 
     if (0 == myid) {
         switch (po_ret) {
@@ -75,10 +75,10 @@ int main(int argc, char *argv[])
         case po_cuda_not_avail:
         case po_openacc_not_avail:
         case po_bad_usage:
-            MPI_Finalize();
+            PMPI_Finalize();
             exit(EXIT_FAILURE);
         case po_help_message:
-            MPI_Finalize();
+            PMPI_Finalize();
             exit(EXIT_SUCCESS);
         case po_okay:
             break;
@@ -89,7 +89,7 @@ int main(int argc, char *argv[])
             fprintf(stderr, "This test requires exactly two processes\n");
         }
 
-        MPI_Finalize();
+        PMPI_Finalize();
 
         return EXIT_FAILURE;
     }
@@ -103,10 +103,10 @@ int main(int argc, char *argv[])
     if(provided != MPI_THREAD_MULTIPLE) {
         if(myid == 0) {
             fprintf(stderr,
-                "MPI_Init_thread must return MPI_THREAD_MULTIPLE!\n");
+                "PMPI_Init_thread must return MPI_THREAD_MULTIPLE!\n");
         }
 
-        MPI_Finalize();
+        PMPI_Finalize();
 
         return EXIT_FAILURE;
     }
@@ -133,7 +133,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    MPI_Finalize();
+    PMPI_Finalize();
 
     return EXIT_SUCCESS;
 }
@@ -165,7 +165,7 @@ void * recv_thread(void *arg) {
         pthread_mutex_lock(&finished_size_mutex);
 
         if(finished_size == THREADS) {
-            MPI_Barrier(MPI_COMM_WORLD);
+            PMPI_Barrier(MPI_COMM_WORLD);
 
             finished_size = 1;
 
@@ -192,9 +192,9 @@ void * recv_thread(void *arg) {
         }
 
         for(i = val; i < (options.loop + options.skip); i += THREADS) {
-            MPI_Recv (r_buf, size, MPI_CHAR, 0, 1, MPI_COMM_WORLD,
+            PMPI_Recv (r_buf, size, MPI_CHAR, 0, 1, MPI_COMM_WORLD,
                     &reqstat[val]);
-            MPI_Send (s_buf, size, MPI_CHAR, 0, 2, MPI_COMM_WORLD);
+            PMPI_Send (s_buf, size, MPI_CHAR, 0, 2, MPI_COMM_WORLD);
         }
 
         iter++;
@@ -232,7 +232,7 @@ void * send_thread(void *arg) {
     }
 
     for(size = 0, iter = 0; size <= MAX_MSG_SIZE; size = (size ? size * 2 : 1)) {
-        MPI_Barrier(MPI_COMM_WORLD);
+        PMPI_Barrier(MPI_COMM_WORLD);
 
         if(size > LARGE_MESSAGE_SIZE) {
             options.loop = options.loop_large;
@@ -247,15 +247,15 @@ void * send_thread(void *arg) {
 
         for(i = 0; i < options.loop + options.skip; i++) {
             if(i == options.skip) {
-                t_start = MPI_Wtime();
+                t_start = PMPI_Wtime();
             }
 
-            MPI_Send(s_buf, size, MPI_CHAR, 1, 1, MPI_COMM_WORLD);
-            MPI_Recv(r_buf, size, MPI_CHAR, 1, 2, MPI_COMM_WORLD,
+            PMPI_Send(s_buf, size, MPI_CHAR, 1, 1, MPI_COMM_WORLD);
+            PMPI_Recv(r_buf, size, MPI_CHAR, 1, 2, MPI_COMM_WORLD,
                     &reqstat[val]);
         }
 
-        t_end = MPI_Wtime ();
+        t_end = PMPI_Wtime ();
         t = t_end - t_start;
 
         latency = (t) * 1.0e6 / (2.0 * options.loop);

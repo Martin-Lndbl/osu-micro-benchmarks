@@ -27,9 +27,9 @@ int main(int argc, char *argv[])
     }
     set_header(HEADER);
 
-    MPI_Init(&argc, &argv);
-    MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
-    MPI_Comm_rank(MPI_COMM_WORLD, &myid);
+    PMPI_Init(&argc, &argv);
+    PMPI_Comm_size(MPI_COMM_WORLD, &numprocs);
+    PMPI_Comm_rank(MPI_COMM_WORLD, &myid);
 
     if (0 == myid) {
         switch (po_ret) {
@@ -52,10 +52,10 @@ int main(int argc, char *argv[])
         case po_cuda_not_avail:
         case po_openacc_not_avail:
         case po_bad_usage:
-            MPI_Finalize();
+            PMPI_Finalize();
             exit(EXIT_FAILURE);
         case po_help_message:
-            MPI_Finalize();
+            PMPI_Finalize();
             exit(EXIT_SUCCESS);
         case po_okay:
             break;
@@ -66,13 +66,13 @@ int main(int argc, char *argv[])
             fprintf(stderr, "This test requires exactly two processes\n");
         }
 
-        MPI_Finalize();
+        PMPI_Finalize();
         exit(EXIT_FAILURE);
     }
 
     if (allocate_memory(&s_buf, &r_buf, myid)) {
         /* Error allocating memory */
-        MPI_Finalize();
+        PMPI_Finalize();
         exit(EXIT_FAILURE);
     }
 
@@ -92,24 +92,24 @@ int main(int argc, char *argv[])
         if(myid == 0) {
             for(i = 0; i < options.loop + options.skip; i++) {
                 if(i == options.skip) {
-                    t_start = MPI_Wtime();
+                    t_start = PMPI_Wtime();
                 }
 
                 for(j = 0; j < window_size; j++) {
-                    MPI_Irecv(r_buf, size, MPI_CHAR, 1, 10, MPI_COMM_WORLD,
+                    PMPI_Irecv(r_buf, size, MPI_CHAR, 1, 10, MPI_COMM_WORLD,
                             recv_request + j);
                 }
 
                 for(j = 0; j < window_size; j++) {
-                    MPI_Isend(s_buf, size, MPI_CHAR, 1, 100, MPI_COMM_WORLD,
+                    PMPI_Isend(s_buf, size, MPI_CHAR, 1, 100, MPI_COMM_WORLD,
                             send_request + j);
                 }
 
-                MPI_Waitall(window_size, send_request, reqstat);
-                MPI_Waitall(window_size, recv_request, reqstat);
+                PMPI_Waitall(window_size, send_request, reqstat);
+                PMPI_Waitall(window_size, recv_request, reqstat);
             }
 
-            t_end = MPI_Wtime();
+            t_end = PMPI_Wtime();
             t = t_end - t_start;
 
         }
@@ -117,17 +117,17 @@ int main(int argc, char *argv[])
         else if(myid == 1) {
             for(i = 0; i < options.loop + options.skip; i++) {
                 for(j = 0; j < window_size; j++) {
-                    MPI_Irecv(r_buf, size, MPI_CHAR, 0, 100, MPI_COMM_WORLD,
+                    PMPI_Irecv(r_buf, size, MPI_CHAR, 0, 100, MPI_COMM_WORLD,
                             recv_request + j);
                 }
 
                 for (j = 0; j < window_size; j++) {
-                    MPI_Isend(s_buf, size, MPI_CHAR, 0, 10, MPI_COMM_WORLD,
+                    PMPI_Isend(s_buf, size, MPI_CHAR, 0, 10, MPI_COMM_WORLD,
                             send_request + j);
                 }
 
-                MPI_Waitall(window_size, send_request, reqstat);
-                MPI_Waitall(window_size, recv_request, reqstat);
+                PMPI_Waitall(window_size, send_request, reqstat);
+                PMPI_Waitall(window_size, recv_request, reqstat);
             }
         }
 
@@ -141,7 +141,7 @@ int main(int argc, char *argv[])
     }
 
     free_memory(s_buf, r_buf, myid);
-    MPI_Finalize();
+    PMPI_Finalize();
 
     if (none != options.accel) {
         if (cleanup_accel()) {
